@@ -5,7 +5,7 @@ module.exports = {
         nav: [
             {text: '首页', link: '/'},
             {text: '目录', link: '/guide/'},
-            {text: '梦呓', link: 'http://www.aichenwei.com'},
+            {text: 'GitHub', link: 'https://github.com/cwyd0822/tensorflow-tutorials'},
             {text: 'CSDN', link: 'https://blog.csdn.net/keyandi'}
         ],
         sidebar: [
