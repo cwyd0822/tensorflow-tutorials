@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>详解TensorFlow之tf.train.batch与tf.train.shuffle_batch | TensorFlow从入门到精通</title>
+    <meta name="description" content="TensorFlow知识点串讲和项目实战">
+    
+    
+    <link rel="preload" href="/assets/css/0.styles.17f32d1e.css" as="style"><link rel="preload" href="/assets/js/app.7619c6b3.js" as="script"><link rel="preload" href="/assets/js/2.e197e3e4.js" as="script"><link rel="preload" href="/assets/js/6.612b0a42.js" as="script"><link rel="prefetch" href="/assets/js/10.e19b3701.js"><link rel="prefetch" href="/assets/js/11.bcb96f38.js"><link rel="prefetch" href="/assets/js/3.5ecd6063.js"><link rel="prefetch" href="/assets/js/4.3ff2fe10.js"><link rel="prefetch" href="/assets/js/5.9c8e0335.js"><link rel="prefetch" href="/assets/js/7.101924b7.js"><link rel="prefetch" href="/assets/js/8.88e1533d.js"><link rel="prefetch" href="/assets/js/9.d0d641fa.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.17f32d1e.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><!----> <span class="site-name">TensorFlow从入门到精通</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link">首页</a></div><div class="nav-item"><a href="/guide/" class="nav-link">目录</a></div><div class="nav-item"><a href="https://github.com/cwyd0822/tensorflow-tutorials" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div><div class="nav-item"><a href="https://blog.csdn.net/keyandi" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  CSDN
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link">首页</a></div><div class="nav-item"><a href="/guide/" class="nav-link">目录</a></div><div class="nav-item"><a href="https://github.com/cwyd0822/tensorflow-tutorials" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div><div class="nav-item"><a href="https://blog.csdn.net/keyandi" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  CSDN
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div> <!----></nav>  <ul class="sidebar-links"><li><a href="/guide/" class="sidebar-link">目录</a></li><li><a href="/article/batch-norm.html" class="sidebar-link">batch-norm函数</a></li><li><a href="/article/input-producer.html" class="sidebar-link">input-producer函数</a></li><li><a href="/article/batch-and-shuffle-batch.html" class="active sidebar-link">batch函数</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/article/batch-and-shuffle-batch.html#tf-train-batch-函数" class="sidebar-link">tf.train.batch()函数</a></li><li class="sidebar-sub-header"><a href="/article/batch-and-shuffle-batch.html#tf-train-shuffle-batch-函数" class="sidebar-link">tf.train.shuffle_batch()函数</a></li></ul></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="详解tensorflow之tf-train-batch与tf-train-shuffle-batch"><a href="#详解tensorflow之tf-train-batch与tf-train-shuffle-batch" class="header-anchor">#</a> 详解TensorFlow之tf.train.batch与tf.train.shuffle_batch</h1> <p>tf.train.batch与tf.train.shuffle_batch的作用都是从队列中读取数据，它们的区别是是否随机打乱数据来读取。</p> <h2 id="tf-train-batch-函数"><a href="#tf-train-batch-函数" class="header-anchor">#</a> tf.train.batch()函数</h2> <div class="language-python extra-class"><pre class="language-python"><code>tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>batch<span class="token punctuation">(</span>
+    tensors<span class="token punctuation">,</span>
+    batch_size<span class="token punctuation">,</span>
+    num_threads<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span>
+    capacity<span class="token operator">=</span><span class="token number">32</span><span class="token punctuation">,</span>
+    enqueue_many<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span>
+    shapes<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span>
+    dynamic_pad<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span>
+    allow_smaller_final_batch<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span>
+    shared_name<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span>
+    name<span class="token operator">=</span><span class="token boolean">None</span>
+<span class="token punctuation">)</span>
+</code></pre></div><ul><li>tensors：一个列表或字典的tensor用来进行入队</li> <li>batch_size：每次从队列中获取出队数据的数量</li> <li>num_threads：用来控制入队tensors线程的数量，如果num_threads大于1，则batch操作将是非确定性的，输出的batch可能会乱序</li> <li>capacity：一个整数，用来设置队列中元素的最大数量</li> <li>enqueue_many：在tensors中的张量是否是单个样本，若为False，则认为tensors代表一个样本．输入张量形状为[x, y, z]时，则输出张量形状为[batch_size, x, y, z]，若为True，则认为tensors代表一批样本，其中第一个维度为样本的索引，并且所有成员tensors在第一维中应具有相同大小．若输入张量形状为[*, x, y, z]，则输出张量的形状为[batch_size, x, y, z]</li> <li>shapes：每个样本的shape，默认是tensors的shape</li> <li>dynamic_pad：为True时允许输入变量的shape，出队后会自动填补维度，来保持与batch内的shapes相同</li> <li>allow_smaller_final_batch：为True队列中的样本数量小于batch_size时，出队的数量会以最终遗留下来的样本进行出队，如果为Flalse，小于batch_size的样本不会做出队处理</li> <li>shared_name：如果设置，则队列将在多个会话中以给定名称共享</li> <li>name：操作的名字</li></ul> <h3 id="代码演示"><a href="#代码演示" class="header-anchor">#</a> 代码演示</h3> <div class="language-python extra-class"><pre class="language-python"><code><span class="token comment">#!/usr/bin/python</span>
+<span class="token comment"># coding:utf-8</span>
+<span class="token keyword">import</span> tensorflow <span class="token keyword">as</span> tf
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+images <span class="token operator">=</span> np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>random<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>  <span class="token comment"># 5x2的矩阵</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>images<span class="token punctuation">)</span>
+label <span class="token operator">=</span> np<span class="token punctuation">.</span>asarray<span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># [0, 1, 2, 3, 4]</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>label<span class="token punctuation">)</span>
+<span class="token comment"># 将数组转换为张量</span>
+images <span class="token operator">=</span> tf<span class="token punctuation">.</span>cast<span class="token punctuation">(</span>images<span class="token punctuation">,</span> tf<span class="token punctuation">.</span>float32<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>images<span class="token punctuation">)</span>
+label <span class="token operator">=</span> tf<span class="token punctuation">.</span>cast<span class="token punctuation">(</span>label<span class="token punctuation">,</span> tf<span class="token punctuation">.</span>int32<span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>label<span class="token punctuation">)</span>
+<span class="token comment"># 切片</span>
+input_queue <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>slice_input_producer<span class="token punctuation">(</span><span class="token punctuation">[</span>images<span class="token punctuation">,</span> label<span class="token punctuation">]</span><span class="token punctuation">,</span> shuffle<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+<span class="token comment"># 按顺序读取队列中的数据</span>
+image_batch<span class="token punctuation">,</span> label_batch <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>batch<span class="token punctuation">(</span>input_queue<span class="token punctuation">,</span> batch_size<span class="token operator">=</span><span class="token number">10</span><span class="token punctuation">,</span> num_threads<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> capacity<span class="token operator">=</span><span class="token number">64</span><span class="token punctuation">)</span>
+
+<span class="token keyword">with</span> tf<span class="token punctuation">.</span>Session<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">as</span> sess<span class="token punctuation">:</span>
+    <span class="token comment"># 线程的协调器</span>
+    coord <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>Coordinator<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 开始在图表中收集队列运行器</span>
+    threads <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>start_queue_runners<span class="token punctuation">(</span>sess<span class="token punctuation">,</span> coord<span class="token punctuation">)</span>
+    image_batch_v<span class="token punctuation">,</span> label_batch_v <span class="token operator">=</span> sess<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">[</span>image_batch<span class="token punctuation">,</span> label_batch<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>image_batch_v<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>label_batch_v<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token comment"># 请求线程结束</span>
+    coord<span class="token punctuation">.</span>request_stop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 等待线程终止</span>
+    coord<span class="token punctuation">.</span>join<span class="token punctuation">(</span>threads<span class="token punctuation">)</span>
+</code></pre></div><p>输出</p> <div class="language-python extra-class"><pre class="language-python"><code><span class="token punctuation">[</span><span class="token number">0.15518834</span> <span class="token number">0.4924818</span> <span class="token punctuation">]</span>
+<span class="token number">0</span>
+<span class="token punctuation">[</span><span class="token number">0.3907916</span>  <span class="token number">0.05013292</span><span class="token punctuation">]</span>
+<span class="token number">1</span>
+<span class="token punctuation">[</span><span class="token number">0.41328526</span> <span class="token number">0.802318</span>  <span class="token punctuation">]</span>
+<span class="token number">2</span>
+<span class="token punctuation">[</span><span class="token number">0.43541858</span> <span class="token number">0.9412442</span> <span class="token punctuation">]</span>
+<span class="token number">3</span>
+<span class="token punctuation">[</span><span class="token number">0.16782863</span> <span class="token number">0.6347318</span> <span class="token punctuation">]</span>
+<span class="token number">4</span>
+</code></pre></div><p>参考代码移步<a href="https://github.com/cwyd0822/cifar10-tensorflow-read-write/blob/master/batch.py" target="_blank" rel="noopener noreferrer">Github<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></p> <h2 id="tf-train-shuffle-batch-函数"><a href="#tf-train-shuffle-batch-函数" class="header-anchor">#</a> tf.train.shuffle_batch()函数</h2> <div class="language-python extra-class"><pre class="language-python"><code>tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>shuffle_batch<span class="token punctuation">(</span>
+    tensors<span class="token punctuation">,</span>
+    batch_size<span class="token punctuation">,</span>
+    capacity<span class="token punctuation">,</span>
+    min_after_dequeue<span class="token punctuation">,</span>
+    num_threads<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span>
+    seed<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span>
+    enqueue_many<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span>
+    shapes<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span>
+    allow_smaller_final_batch<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span>
+    shared_name<span class="token operator">=</span><span class="token boolean">None</span><span class="token punctuation">,</span>
+    name<span class="token operator">=</span><span class="token boolean">None</span>
+<span class="token punctuation">)</span>
+</code></pre></div><p>可以看出，跟tf.train.batch的参数是一样的，只是这里多了个seed和min_after_dequeue，其中seed表示随机数的种子，min_after_dequeue是出队后队列中元素的最小数量，用于确保元素的混合级别，这个参数一定要比capacity小。</p> <h3 id="代码演示-2"><a href="#代码演示-2" class="header-anchor">#</a> 代码演示</h3> <div class="language-python extra-class"><pre class="language-python"><code><span class="token comment">#!/usr/bin/python</span>
+<span class="token comment"># coding:utf-8</span>
+<span class="token keyword">import</span> tensorflow <span class="token keyword">as</span> tf
+<span class="token keyword">import</span> numpy <span class="token keyword">as</span> np
+
+images <span class="token operator">=</span> np<span class="token punctuation">.</span>random<span class="token punctuation">.</span>random<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+label <span class="token operator">=</span> np<span class="token punctuation">.</span>asarray<span class="token punctuation">(</span><span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment"># 列表转成张量</span>
+images <span class="token operator">=</span> tf<span class="token punctuation">.</span>cast<span class="token punctuation">(</span>images<span class="token punctuation">,</span> tf<span class="token punctuation">.</span>float32<span class="token punctuation">)</span>
+label <span class="token operator">=</span> tf<span class="token punctuation">.</span>cast<span class="token punctuation">(</span>label<span class="token punctuation">,</span> tf<span class="token punctuation">.</span>int32<span class="token punctuation">)</span>
+<span class="token comment"># 输入张量列表</span>
+input_queue <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>slice_input_producer<span class="token punctuation">(</span><span class="token punctuation">[</span>images<span class="token punctuation">,</span> label<span class="token punctuation">]</span><span class="token punctuation">,</span> shuffle<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+<span class="token comment"># 将队列中数据打乱后再读取出来</span>
+image_batch<span class="token punctuation">,</span> label_batch <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>shuffle_batch<span class="token punctuation">(</span>input_queue<span class="token punctuation">,</span> batch_size<span class="token operator">=</span><span class="token number">10</span><span class="token punctuation">,</span> num_threads<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> capacity<span class="token operator">=</span><span class="token number">64</span><span class="token punctuation">,</span> min_after_dequeue<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+<span class="token keyword">with</span> tf<span class="token punctuation">.</span>Session<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">as</span> sess<span class="token punctuation">:</span>
+    <span class="token comment"># 线程的协调器</span>
+    coord <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>Coordinator<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 开始在图表中收集队列运行器</span>
+    threads <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>start_queue_runners<span class="token punctuation">(</span>sess<span class="token punctuation">,</span> coord<span class="token punctuation">)</span>
+    image_batch_v<span class="token punctuation">,</span> label_batch_v <span class="token operator">=</span> sess<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">[</span>image_batch<span class="token punctuation">,</span> label_batch<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> j <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># print(image_batch_v.shape, label_batch_v[j])</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>image_batch_v<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token keyword">print</span><span class="token punctuation">(</span>label_batch_v<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token comment"># 请求线程结束</span>
+    coord<span class="token punctuation">.</span>request_stop<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 等待线程终止</span>
+    coord<span class="token punctuation">.</span>join<span class="token punctuation">(</span>threads<span class="token punctuation">)</span>
+</code></pre></div><p>输出</p> <div class="language-python extra-class"><pre class="language-python"><code><span class="token punctuation">[</span><span class="token number">0.93350357</span> <span class="token number">0.9003149</span> <span class="token punctuation">]</span>
+<span class="token number">0</span>
+<span class="token punctuation">[</span><span class="token number">0.7407439</span> <span class="token number">0.896775</span> <span class="token punctuation">]</span>
+<span class="token number">1</span>
+<span class="token punctuation">[</span><span class="token number">0.6358515</span>  <span class="token number">0.69127077</span><span class="token punctuation">]</span>
+<span class="token number">2</span>
+<span class="token punctuation">[</span><span class="token number">0.96927387</span> <span class="token number">0.7181145</span> <span class="token punctuation">]</span>
+<span class="token number">3</span>
+<span class="token punctuation">[</span><span class="token number">0.93350357</span> <span class="token number">0.9003149</span> <span class="token punctuation">]</span>
+<span class="token number">0</span>
+</code></pre></div><p>代码已经上传至<a href="https://github.com/cwyd0822/cifar10-tensorflow-read-write/blob/master/shuffle_batch.py" target="_blank" rel="noopener noreferrer">Github<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></p></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
+      ←
+      <a href="/article/input-producer.html" class="prev">input-producer函数</a></span> <!----></p></div> </main></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.7619c6b3.js" defer></script><script src="/assets/js/2.e197e3e4.js" defer></script><script src="/assets/js/6.612b0a42.js" defer></script>
+  </body>
+</html>
